@@ -1,4 +1,4 @@
-#! /bin/env python
+#! /usr/bin/env python
 
 # Copyright 2015 Lee Smith
 # Released under the MIT license
@@ -12,7 +12,7 @@ from collections import namedtuple
 import argparse
 
 
-TVH_PATH_GLOB = '.hts/tvheadend/input/dvb/networks/*/muxes/*'
+TVH_PATH_GLOB = 'input/dvb/networks/*/muxes/*'
 
 TVH_STREAM_TYPES = [
     ("H264", "MPEG2VIDEO"),
@@ -73,8 +73,8 @@ def get_mux_config(conf):
     return source, freq, nid, tid, params 
 
 
-def get_channels_conf(user):
-    path_glob = os.path.join(os.path.expanduser('~' + user), TVH_PATH_GLOB)
+def get_channels_conf(user, config_path):
+    path_glob = os.path.join(os.path.expanduser('~' + user), config_path, TVH_PATH_GLOB)
 
     for mux_path in glob.glob(path_glob):
         services_path = os.path.join(mux_path, 'services')
@@ -92,6 +92,10 @@ def main():
 
     parser.add_argument('-u', '--user', default='hts',
                         help='set the Tvheadend user name (default: %(default)s)')
+
+    parser.add_argument('-p', '--path', default='.hts/tvheadend',
+                        help='set the Tvheadend config path relative to '
+                             'the user home directory (default: %(default)s)')
                         
     parser.add_argument('-o', '--outfile', nargs='?', type=argparse.FileType('w'),
                         default=sys.stdout, const='channels.conf',
@@ -99,7 +103,7 @@ def main():
 
     args = parser.parse_args()
 
-    channels_conf = get_channels_conf(args.user)
+    channels_conf = get_channels_conf(args.user, args.path)
     output = (':'.join(map(str, channel)) + '\n' for channel in channels_conf)
     
     try:
